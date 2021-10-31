@@ -1,0 +1,283 @@
+unc StartMining(w http.ResponseWriter, r *http.Request) {
+	// Get username from request context
+	if err := dbTransaction(database.Connector, w, r); err != nil {
+		fmt.Println(err)
+	} else {
+		fmt.Println("Transaction completed")
+	}
+}
+
+func dbTransaction(db *gorm.DB, w http.ResponseWriter, r *http.Request) error {
+	// Note the use of tx as the database handle once you are within a transaction
+	tx := db.Begin()
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+		}
+	}()
+
+	if err := tx.Error; err != nil {
+		return err
+	}
+
+	// Get username from request context
+	username := r.Context().Value("username")
+
+	// Get wallet name from path
+	vars := mux.Vars(r)
+	wallet := vars["name"]
+
+	// Get user from db
+	var user entity.User
+	if err := database.Connector.Where("username = ?", username).First(&user).Error; err != nil {
+		tx.Rollback()
+	}
+	ok := false
+	for _, name := range strings.Split(user.Wallets, " ") {
+		if name == wallet {
+			ok = true
+			var v entity.CryptoWallet
+			if err := database.Connector.Where("username = ?", username).Where("name = ?", wallet).First(&v).Error; err != nil {
+				tx.Rollback()
+			}
+			fmt.Println(v)
+			// db.Where("name = ?", "jinzhu").Where("age = ?", 18).First(&user)
+
+			// if err := database.Connector.Select("username", "name").Where(" = ?", 18}).Find(&User{})
+			// if err := database.Connector.Where("username = ?", username).First(&v).Error; err != nil {
+			// 	tx.Rollback()
+			// }
+			v.Notstarted = false
+			v.Mine()
+			fmt.Println(v.Notstarted, v.Amount)
+			// db.Model(&user).Updates(map[string]interface{}{"name": "hello", "age": 18, "active": false})
+			if err := database.Connector.Model(&v).Updates(map[string]interface{}{"notstarted": false, "amount": v.Amount}).Error; err != nil {
+				fmt.Println("wallet save error", err) // nil
+			}
+			// if err := database.Connector.Save(&v).Error; err != nil {
+			// 	fmt.Println("wallet save error", err) // nil
+			// }
+			var v2 entity.CryptoWallet
+			if err := database.Connector.Where("username = ?", username).First(&v2).Error; err != nil {
+				tx.Rollback()
+			}
+		}
+	}
+}
+
+func C(db *gorm.DB) error {
+	// Note the use of tx as the database handle once you are within a transaction
+	tx := db.Begin()
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+		}
+	}()
+
+	if err := tx.Error; err != nil {
+		return err
+	}
+
+	// Get username from request context
+	username := r.Context().Value("username")
+
+	// Get wallet name from path
+	vars := mux.Vars(r)
+	wallet := vars["name"]
+
+	// Get user from db
+	var user entity.User
+	if database.Connector.Where("username = ?", username).First(&user).Error; err != nil {
+		tx.Rollback()
+	}
+	ok := false
+	for _, name := range strings.Split(user.Wallets, " ") {
+		if name == wallet {
+			ok = true
+		}
+	}
+	// Check if wallet exists
+	for _, name := range strings.Split(user.Wallets, " ") {
+		if name == wallet {
+			// Get wallet from DB
+			var v entity.CryptoWallet
+			if err := database.Connector.Where("username = ?", username).First(&v).Error; err != nil {
+				tx.Rollback()
+			}
+			fmt.Println(v.Name, v.Start)
+			// Start mining
+			v.RLock()
+			defer v.RUnlock()
+			if v.Start {
+				w.WriteHeader(http.StatusBadRequest)
+				tx.Error = fmt.Errorf(w, "Mining already started\n")
+				tx.Rollback()
+			}
+			// v.Lock()
+			// defer v.Unlock()
+			v.Start = true
+			database.Connector.Save(&user)
+			fmt.Println(v.Name, v.Start)
+			v.RLock()
+			defer v.RUnlock()
+			fmt.Fprintf(w, "Starting mining, current amount: %d\n", v.Amount)
+			// log.Printf("Starting mining, current amount: %d\n", v.Amount)
+
+			// v.RUnlock()
+
+			// Wait for stop instructions, otherwise keep mining
+			go func(v *entity.CryptoWallet) {
+				ctx, cancel := context.WithCancel(context.Background())
+				defer cancel()
+				go func(ctx context.Context, v *entity.CryptoWallet) {
+					for {
+						v.Mine()
+						database.Connector.Save(&v)
+					}
+				}(ctx, v)
+				for {
+					select {
+					case _, ok := <-v.Stop:
+						if !ok {
+							tx.Error = fmt.Errorf(w, "mining failed")
+							tx.Rollback()
+						}
+						cancel()
+						v.Lock()         ////
+						defer v.Unlock() ////
+						v.Start = false
+						database.Connector.Save(&v)
+						return nil
+					}
+				}
+			}(&v)
+		}
+	}
+
+	// If failed to find wallet
+	if !ok {
+		w.WriteHeader(http.StatusNotFound)
+		// WHY BEING PRINTED????
+		tx.Error = fmt.Errorf(w, "Couldn't find wallet %s under your username", wallet)
+		tx.Rollback()
+	}
+
+	return tx.Commit().Error
+}
+
+
+
+
+// func CreateAnimals(db *gorm.DB) error {
+// 	// Note the use of tx as the database handle once you are within a transaction
+// 	tx := db.Begin()
+// 	defer func() {
+// 		if r := recover(); r != nil {
+// 			tx.Rollback()
+// 		}
+// 	}()
+
+// 	if err := tx.Error; err != nil {
+// 		return err
+// 	}
+
+// 	if err := tx.Create(&Animal{Name: "Giraffe"}).Error; err != nil {
+// 		tx.Rollback()
+// 		return err
+// 	}
+
+// 	if err := tx.Create(&Animal{Name: "Lion"}).Error; err != nil {
+// 		tx.Rollback()
+// 		return err
+// 	}
+
+// 	return tx.Commit().Error
+// }
+
+// // Start cryptomining
+// func StartMining(w http.ResponseWriter, r *http.Request) {
+// 	// Get username from request context
+// 	username := r.Context().Value("username")
+
+// 	// Get wallet name from path
+// 	vars := mux.Vars(r)
+// 	wallet := vars["name"]
+
+// 	// Get user from db
+// 	var user entity.User
+// 	database.Connector.Where("username = ?", username).First(&user)
+// 	ok := false
+// 	for _, name := range strings.Split(user.Wallets, " ") {
+// 		if name == wallet {
+// 			ok = true
+// 		}
+// 	}
+// 	// Check if wallet exists
+// 	for _, name := range strings.Split(user.Wallets, " ") {
+// 		if name == wallet {
+// 			// Get wallet from DB
+// 			var v entity.CryptoWallet
+// 			if err := database.Connector.Where("username = ?", username).First(&v).Error; err != nil {
+// 				fmt.Println("Wallet error!", err)
+// 			}
+// 			fmt.Println(v.Name, v.Start)
+// 			// Start mining
+// 			v.RLock()
+// 			defer v.RUnlock()
+// 			if v.Start {
+// 				w.WriteHeader(http.StatusBadRequest)
+// 				fmt.Fprintf(w, "Mining already started\n")
+// 				return
+// 			}
+// 			// v.Lock()
+// 			// defer v.Unlock()
+// 			v.Start = true
+// 			database.Connector.Save(&user)
+// 			fmt.Println(v.Name, v.Start)
+// 			v.RLock()
+// 			defer v.RUnlock()
+// 			fmt.Fprintf(w, "Starting mining, current amount: %d\n", v.Amount)
+// 			// log.Printf("Starting mining, current amount: %d\n", v.Amount)
+
+// 			// v.RUnlock()
+
+// 			// Wait for stop instructions, otherwise keep mining
+// 			go func(v *entity.CryptoWallet) {
+// 				ctx, cancel := context.WithCancel(context.Background())
+// 				defer cancel()
+// 				go func(ctx context.Context, v *entity.CryptoWallet) {
+// 					for {
+// 						v.Mine()
+// 						database.Connector.Save(&user)
+// 					}
+// 				}(ctx, v)
+// 				for {
+// 					select {
+// 					case _, ok := <-v.Stop:
+// 						if !ok {
+// 							fmt.Fprintf(w, "mining failed")
+// 							database.Connector.Save(&user)
+// 							return
+// 						}
+// 						cancel()
+// 						v.Lock()         ////
+// 						defer v.Unlock() ////
+// 						v.Start = false
+// 						database.Connector.Save(&user)
+// 						return
+// 					}
+// 				}
+// 			}(&v)
+// 		}
+// 	}
+
+// 	// If failed to find wallet
+// 	if !ok {
+// 		w.WriteHeader(http.StatusNotFound)
+// 		// WHY BEING PRINTED????
+// 		fmt.Fprintf(w, "Couldn't find wallet %s under your username", wallet)
+// 		return
+// 	}
+// }
+
+
