@@ -10,12 +10,6 @@ import (
 	"time"
 )
 
-// // Middleware storing username and password
-// type AuthenticationMiddleware struct {
-// 	TokenUsers map[string]string
-// 	*sync.Mutex
-// }
-
 // Timer middleware with trailer
 func TimerMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -42,7 +36,7 @@ func HTTPMethodsCheckMiddleware(next http.Handler) http.Handler {
 }
 
 // Authenticate user
-func AuthenticationMiddlewareAuthMiddleware(next http.Handler) http.Handler {
+func AuthMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		username, password, ok := r.BasicAuth()
 		if !ok {
@@ -58,8 +52,7 @@ func AuthenticationMiddlewareAuthMiddleware(next http.Handler) http.Handler {
 			next.ServeHTTP(w, r)
 		} else {
 			w.WriteHeader(http.StatusForbidden)
-			// GetAllPerson(w, r)
-			fmt.Fprintln(w, "Invalid username or password", err)
+			fmt.Fprintln(w, "Invalid username or password")
 		}
 	})
 }

@@ -5,14 +5,10 @@ import (
 	"time"
 )
 
-// Cryptowallet object
 type CryptoWallet struct {
 	Username string
-	Name     string `gorm:"primaryKey"`
-	Amount   int64  ///////////////////////hhh`gorm:"default:18"`
-	// Stop       chan struct{} `sql:"-"`
-	// Stop       bool //sql.NullBool  then when assigning sql.NullBool{}
-	// Notstarted bool ////////////////////hhh`gorm:"default:true"`
+	Name     string
+	Amount   int64
 	sync.RWMutex
 }
 
@@ -37,9 +33,6 @@ func NewWallet(name string) *CryptoWallet {
 		"",
 		name,
 		0,
-		// make(chan struct{}),
-		// false,
-		// true,
 		sync.RWMutex{},
 	}
 }

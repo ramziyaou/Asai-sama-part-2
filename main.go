@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 	"rest-go-demo/controllers"
@@ -12,17 +13,30 @@ import (
 	_ "github.com/jinzhu/gorm/dialects/mysql" //Required for MySQL dialect
 )
 
+// README.md хранит в себе все инструкции по эксплуатации программы
+// Используется БД под названием "test_two", которая создавалась по команде create database test_two;
+// Создаются три таблицы: по одной для юзеров, кошельков и для статуса майнинга (последнее во избежание дата рейса). К сожалению, связать таблицы не удалось,
+// в связи с проблемами с ассоциационными функциями в gorm. Если успею, постараюсь исправить этот недочет
+// GetWallet возвращает обновленные данные о балансе кошелька только по завершении майнинга, во время майнинга данные не обновляются во избежание дата рейса.
+// Также постмайнинговый баланс можно увидеть с небольшой задержкой во времени, так как майнинг - процесс непростой :)
+// ID 0 запрещен в пределах данного сервиса
+
 func main() {
 	initDB()
 	user := entity.User{
-		ID:       0,
+		ID:       1,
 		Username: "Ramziya",
 		Password: "1234",
 	}
 	if err := database.Connector.Where("username = ?", user.Username).First(&user).Error; err != nil {
 		database.Connector.Create(&user)
 	}
-
+	// Set stop and start status of mining to false in case of incorrect exit from program earlier (e.g. program exited without stopping mining previously)
+	var ss entity.StartStopCheck
+	if err := database.Connector.Model(&ss).Updates(map[string]interface{}{"start": false, "stop": false}).Error; err != nil {
+		fmt.Println(err)
+		return
+	}
 	log.Println("Starting the HTTP server on port 8090")
 
 	router := mux.NewRouter().StrictSlash(true)
@@ -37,25 +51,23 @@ func initaliseHandlers(router *mux.Router) {
 	router.HandleFunc("/app/wallet/{name:[a-zA-Z]+}", controllers.SaveWallet).Methods("POST")
 	router.HandleFunc("/app/wallet/{name:[a-zA-Z]+}/start", controllers.StartMining).Methods("OPTIONS")
 	router.HandleFunc("/app/wallet/{name:[a-zA-Z]+}/stop", controllers.StopMining).Methods("OPTIONS")
-
-	router.HandleFunc("/delete/{id}", controllers.DeleteU).Methods("DELETE")
-	router.Use(middleware.TimerMiddleware, middleware.HTTPMethodsCheckMiddleware, middleware.AuthenticationMiddlewareAuthMiddleware)
+	router.Use(middleware.TimerMiddleware, middleware.HTTPMethodsCheckMiddleware, middleware.AuthMiddleware)
 }
 
 func initDB() {
 	config :=
 		database.Config{
-			ServerName: "localhost:3306",
+			ServerName: "localhost:3306", // Change to your root localhost
 			User:       "root",
-			Password:   "admin",
+			Password:   "admin", // Change to your root password
 			DB:         "test_two",
 		}
 
 	connectionString := database.GetConnectionString(config)
 	err := database.Connect(connectionString)
 	if err != nil {
-		panic(err.Error())
+		log.Println("initDB:", err)
+		return
 	}
 	database.Migrate(&entity.User{}, &entity.CryptoWallet{}, &entity.StartStopCheck{})
-	// database.Migrate(&entity.CryptoWallet{})
 }

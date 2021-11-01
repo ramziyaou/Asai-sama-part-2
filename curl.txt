@@ -1,0 +1,230 @@
+Asynchronous commands:
+Note that wallet amount after these commands can be at most 2 for some users, as commands are being executed rapidly
+1. Runs for my preregistered user only:
+a) Authorize as preregistered user
+b) Attempt to access wallet(s) if available or create wallet(s)
+c) Attempt to start / stop mining for wallet(s) for that one user
+
+curl -v --raw --location --request GET 'http://localhost:8080/app/wallet/name' \
+--header 'Authorization: Basic UmFteml5YToxMjM0'&curl -v --raw --location --request POST 'http://localhost:8080/app/wallet/nameA' \
+--header 'Authorization: Basic UmFteml5YToxMjM0'&curl -v --raw --location --request POST 'http://localhost:8080/app/wallet/name' \
+--header 'Authorization: Basic UmFteml5YToxMjM0'&curl -v --raw --location --request OPTIONS 'http://localhost:8080/app/wallet/start' \
+--header 'Authorization: Basic UmFteml5YToxMjM0'&curl -v --raw --location --request OPTIONS 'http://localhost:8080/app/wallet/name/start' \
+--header 'Authorization: Basic UmFteml5YToxMjM0'&curl -v --raw --location --request OPTIONS 'http://localhost:8080/app/wallet/nameA/start' \
+--header 'Authorization: Basic UmFteml5YToxMjM0'&curl -v --raw --location --request POST 'http://localhost:8080/app/wallet/nameB' \
+--header 'Authorization: Basic UmFteml5YToxMjM0'&curl -v --raw --location --request OPTIONS 'http://localhost:8080/app/wallet/name/stop' \
+--header 'Authorization: Basic UmFteml5YToxMjM0'&curl -v --raw --location --request OPTIONS 'http://localhost:8080/app/wallet/name/stop' \
+--header 'Authorization: Basic UmFteml5YToxMjM0'&curl -v --raw --location --request OPTIONS 'http://localhost:8080/app/wallet/name/stop' \
+--header 'Authorization: Basic UmFteml5YToxMjM0'&curl -v --raw --location --request OPTIONS 'http://localhost:8080/app/wallet/nameB/stop' \
+--header 'Authorization: Basic UmFteml5YToxMjM0'&curl -v --raw --location --request OPTIONS 'http://localhost:8080/app/wallet/nameB/start' \
+--header 'Authorization: Basic UmFteml5YToxMjM0'&curl -v --raw --location --request OPTIONS 'http://localhost:8080/app/wallet/nameA/stop' \
+--header 'Authorization: Basic UmFteml5YToxMjM0'
+
+
+2. Adding one more user:
+a) Authorize as preregistered user
+b) Attempt to access wallet(s) if available or create wallet(s)
+c) Attempt to start / stop mining for wallet(s) for that one user
+d) Create one more user
+e) Retrieve data on new user
+f) Authorize as new user and attempt to retrieve data on that user and my initial user
+g) Do b) and c) for new user
+e) Check wallet amount periodically while and in-between mining
+f) Attempt to create another user under existing ID (will fail)
+
+
+
+curl -v --raw --location --request POST 'http://localhost:8080/app/wallet/nameA' \
+--header 'Authorization: Basic UmFteml5YToxMjM0'&curl -v --raw --location --request POST 'http://localhost:8080/app/wallet/name' \
+--header 'Authorization: Basic UmFteml5YToxMjM0'&curl -v --raw --location --request OPTIONS 'http://localhost:8080/app/wallet/start' \
+--header 'Authorization: Basic UmFteml5YToxMjM0'&curl -v --raw --location --request OPTIONS 'http://localhost:8080/app/wallet/name/start' \
+--header 'Authorization: Basic UmFteml5YToxMjM0'&curl -v --raw --location --request OPTIONS 'http://localhost:8080/app/wallet/nameA/start' \
+--header 'Authorization: Basic UmFteml5YToxMjM0'&curl -v --raw --location --request POST 'http://localhost:8080/app/wallet/nameB' \
+--header 'Authorization: Basic UmFteml5YToxMjM0'&curl -v --raw --location --request OPTIONS 'http://localhost:8080/app/wallet/name/stop' \
+--header 'Authorization: Basic UmFteml5YToxMjM0'&curl -v --raw --location --request OPTIONS 'http://localhost:8080/app/wallet/name/stop' \
+--header 'Authorization: Basic UmFteml5YToxMjM0'&curl -v --raw --location --request OPTIONS 'http://localhost:8080/app/wallet/name/stop' \
+--header 'Authorization: Basic UmFteml5YToxMjM0'&curl -v --raw --location --request OPTIONS 'http://localhost:8080/app/wallet/nameB/stop' \
+--header 'Authorization: Basic UmFteml5YToxMjM0'&curl -v --raw --location --request OPTIONS 'http://localhost:8080/app/wallet/nameB/start' \
+--header 'Authorization: Basic UmFteml5YToxMjM0'&curl -v --raw --location --request OPTIONS 'http://localhost:8080/app/wallet/nameA/stop' \
+--header 'Authorization: Basic UmFteml5YToxMjM0'&curl -v --raw --location --request POST 'http://localhost:8080/app/user/' \
+--header 'Authorization: Basic UmFteml5YToxMjM0'&curl -v --raw --location --request POST 'http://localhost:8080/app/user/1' \
+--header 'Authorization: Basic UmFteml5YToxMjM0'&curl -v --raw --location --request POST 'http://localhost:8080/app/user/1?username=Mary&pass=sth' \
+--header 'Authorization: Basic UmFteml5YToxMjM0'&curl -v --raw --location --request POST 'http://localhost:8080/app/user/1?username=Mary&password=@@@' \
+--header 'Authorization: Basic UmFteml5YToxMjM0'&curl -v --raw --location --request GET 'http://localhost:8080/app/user/1' \
+--header 'Authorization: Basic UmFteml5YToxMjM0'&curl -v --raw --location --request GET 'http://localhost:8080/app/user/1' \
+--header 'Authorization: Basic TWFyeTpAQEA='&curl -v --raw --location --request GET 'http://localhost:8080/app/user/2' \
+--header 'Authorization: Basic TWFyeTpAQEA='&curl -v --raw --location --request GET 'http://localhost:8080/app/user/0' \
+--header 'Authorization: Basic TWFyeTpAQEA='&curl -v --raw --location --request POST 'http://localhost:8080/app/user/1?username=2727&password=22' \
+--header 'Authorization: Basic TWFyeTpAQEA='&curl -v --raw --location --request POST 'http://localhost:8080/app/wallet/82' \
+--header 'Authorization: Basic TWFyeTpAQEA='&curl -v --raw --location --request POST 'http://localhost:8080/app/wallet/aaa' \
+--header 'Authorization: Basic TWFyeTpAQEA='&curl -v --raw --location --request OPTIONS 'http://localhost:8080/app/wallet/aaa/stop' \
+--header 'Authorization: Basic TWFyeTpAQEA='&curl -v --raw --location --request OPTIONS 'http://localhost:8080/app/wallet/aaa/start' \
+--header 'Authorization: Basic TWFyeTpAQEA='&curl -v --raw --location --request POST 'http://localhost:8080/app/wallet/bbb' \
+--header 'Authorization: Basic TWFyeTpAQEA='&curl -v --raw --location --request OPTIONS 'http://localhost:8080/app/wallet/bbb/start' \
+--header 'Authorization: Basic TWFyeTpAQEA='&curl -v --raw --location --request OPTIONS 'http://localhost:8080/app/wallet/nameB/start' \
+--header 'Authorization: Basic UmFteml5YToxMjM0'&curl -v --raw --location --request OPTIONS 'http://localhost:8080/app/wallet/nameA/start' \
+--header 'Authorization: Basic UmFteml5YToxMjM0'&curl -v --raw --location --request OPTIONS 'http://localhost:8080/app/wallet/name/start' \
+--header 'Authorization: Basic UmFteml5YToxMjM0'&curl -v --raw --location --request OPTIONS 'http://localhost:8080/app/wallet/nameB/stop' \
+--header 'Authorization: Basic UmFteml5YToxMjM0'&curl -v --raw --location --request OPTIONS 'http://localhost:8080/app/wallet/bbb/stop' \
+--header 'Authorization: Basic TWFyeTpAQEA='&curl -v --raw --location --request OPTIONS 'http://localhost:8080/app/wallet/nameA/stop' \
+--header 'Authorization: Basic UmFteml5YToxMjM0'&curl -v --raw --location --request OPTIONS 'http://localhost:8080/app/wallet/aaa/stop' \
+--header 'Authorization: Basic TWFyeTpAQEA='&curl -v --raw --location --request OPTIONS 'http://localhost:8080/app/wallet/name/stop' \
+--header 'Authorization: Basic UmFteml5YToxMjM0'&curl -v --raw --location --request GET 'http://localhost:8080/app/user/4' \
+--header 'Authorization: Basic UmFteml5YToxMjM0'
+
+3) 2 more users:
+curl -v --raw --location --request POST 'http://localhost:8080/app/wallet/nameA' \
+--header 'Authorization: Basic UmFteml5YToxMjM0'&curl -v --raw --location --request POST 'http://localhost:8080/app/wallet/name' \
+--header 'Authorization: Basic UmFteml5YToxMjM0'&curl -v --raw --location --request OPTIONS 'http://localhost:8080/app/wallet/start' \
+--header 'Authorization: Basic UmFteml5YToxMjM0'&curl -v --raw --location --request OPTIONS 'http://localhost:8080/app/wallet/name/start' \
+--header 'Authorization: Basic UmFteml5YToxMjM0'&curl -v --raw --location --request OPTIONS 'http://localhost:8080/app/wallet/nameA/start' \
+--header 'Authorization: Basic UmFteml5YToxMjM0'&curl -v --raw --location --request POST 'http://localhost:8080/app/wallet/nameB' \
+--header 'Authorization: Basic UmFteml5YToxMjM0'&curl -v --raw --location --request OPTIONS 'http://localhost:8080/app/wallet/name/stop' \
+--header 'Authorization: Basic UmFteml5YToxMjM0'&curl -v --raw --location --request OPTIONS 'http://localhost:8080/app/wallet/name/stop' \
+--header 'Authorization: Basic UmFteml5YToxMjM0'&curl -v --raw --location --request OPTIONS 'http://localhost:8080/app/wallet/name/stop' \
+--header 'Authorization: Basic UmFteml5YToxMjM0'&curl -v --raw --location --request OPTIONS 'http://localhost:8080/app/wallet/nameB/stop' \
+--header 'Authorization: Basic UmFteml5YToxMjM0'&curl -v --raw --location --request OPTIONS 'http://localhost:8080/app/wallet/nameB/start' \
+--header 'Authorization: Basic UmFteml5YToxMjM0'&curl -v --raw --location --request OPTIONS 'http://localhost:8080/app/wallet/nameA/stop' \
+--header 'Authorization: Basic UmFteml5YToxMjM0'&curl -v --raw --location --request POST 'http://localhost:8080/app/user/' \
+--header 'Authorization: Basic UmFteml5YToxMjM0'&curl -v --raw --location --request POST 'http://localhost:8080/app/user/1' \
+--header 'Authorization: Basic UmFteml5YToxMjM0'&curl -v --raw --location --request POST 'http://localhost:8080/app/user/10?username=Mary&pass=sth' \
+--header 'Authorization: Basic UmFteml5YToxMjM0'&curl -v --raw --location --request POST 'http://localhost:8080/app/user/10?username=Mary&password=@@@' \
+--header 'Authorization: Basic UmFteml5YToxMjM0'&curl -v --raw --location --request GET 'http://localhost:8080/app/user/10' \
+--header 'Authorization: Basic UmFteml5YToxMjM0'&curl -v --raw --location --request GET 'http://localhost:8080/app/user/10' \
+--header 'Authorization: Basic TWFyeTpAQEA='&curl -v --raw --location --request GET 'http://localhost:8080/app/user/2' \
+--header 'Authorization: Basic TWFyeTpAQEA='&curl -v --raw --location --request GET 'http://localhost:8080/app/user/0' \
+--header 'Authorization: Basic TWFyeTpAQEA='&curl -v --raw --location --request POST 'http://localhost:8080/app/user/1?username=2727&password=22' \
+--header 'Authorization: Basic TWFyeTpAQEA='&curl -v --raw --location --request POST 'http://localhost:8080/app/wallet/82' \
+--header 'Authorization: Basic TWFyeTpAQEA='&curl -v --raw --location --request POST 'http://localhost:8080/app/wallet/aaa' \
+--header 'Authorization: Basic TWFyeTpAQEA='&curl -v --raw --location --request OPTIONS 'http://localhost:8080/app/wallet/aaa/stop' \
+--header 'Authorization: Basic TWFyeTpAQEA='&curl -v --raw --location --request OPTIONS 'http://localhost:8080/app/wallet/aaa/start' \
+--header 'Authorization: Basic TWFyeTpAQEA='&curl -v --raw --location --request POST 'http://localhost:8080/app/wallet/bbb' \
+--header 'Authorization: Basic TWFyeTpAQEA='&curl -v --raw --location --request OPTIONS 'http://localhost:8080/app/wallet/bbb/start' \
+--header 'Authorization: Basic TWFyeTpAQEA='&curl -v --raw --location --request OPTIONS 'http://localhost:8080/app/wallet/nameB/start' \
+--header 'Authorization: Basic UmFteml5YToxMjM0'&curl -v --raw --location --request OPTIONS 'http://localhost:8080/app/wallet/nameA/start' \
+--header 'Authorization: Basic UmFteml5YToxMjM0'&curl -v --raw --location --request OPTIONS 'http://localhost:8080/app/wallet/name/start' \
+--header 'Authorization: Basic UmFteml5YToxMjM0'&curl -v --raw --location --request OPTIONS 'http://localhost:8080/app/wallet/nameB/stop' \
+--header 'Authorization: Basic UmFteml5YToxMjM0'&curl -v --raw --location --request OPTIONS 'http://localhost:8080/app/wallet/bbb/stop' \
+--header 'Authorization: Basic TWFyeTpAQEA='&curl -v --raw --location --request OPTIONS 'http://localhost:8080/app/wallet/nameA/stop' \
+--header 'Authorization: Basic UmFteml5YToxMjM0'&curl -v --raw --location --request OPTIONS 'http://localhost:8080/app/wallet/aaa/stop' \
+--header 'Authorization: Basic TWFyeTpAQEA='&curl -v --raw --location --request OPTIONS 'http://localhost:8080/app/wallet/nameA/start' \
+--header 'Authorization: Basic UmFteml5YToxMjM0'&curl -v --raw --location --request OPTIONS 'http://localhost:8080/app/wallet/name/stop' \
+--header 'Authorization: Basic UmFteml5YToxMjM0'&curl -v --raw --location --request GET 'http://localhost:8080/app/wallet/name' \
+--header 'Authorization: Basic UmFteml5YToxMjM0'&curl -v --raw --location --request POST 'http://localhost:8080/app/user/2?username=Cora&password=111' \
+--header 'Authorization: Basic UmFteml5YToxMjM0'&curl -v --raw --location --request GET 'http://localhost:8080/app/user/2' \
+--header 'Authorization: Basic UmFteml5YToxMjM0'&curl -v --raw --location --request POST 'http://localhost:8080/app/user/3?username=L&password=Kira' \
+--header 'Authorization: Basic Q29yYToxMTE='&curl -v --raw --location --request POST 'http://localhost:8080/app/wallet/zzz' \
+--header 'Authorization: Basic Q29yYToxMTE='&curl -v --raw --location --request POST 'http://localhost:8080/app/wallet/jjj' \
+--header 'Authorization: Basic Q29yYToxMTE='&curl -v --raw --location --request GET 'http://localhost:8080/app/user/2' \
+--header 'Authorization: Basic UmFteml5YToxMjM0'&curl -v --raw --location --request OPTIONS 'http://localhost:8080/app/wallet/zzz/start' \
+--header 'Authorization: Basic Q29yYToxMTE='&curl -v --raw --location --request OPTIONS 'http://localhost:8080/app/wallet/KIRA/start' \
+--header 'Authorization: Basic TDpLaXJh'&curl -v --raw --location --request GET 'http://localhost:8080/app/wallet/zzz' \
+--header 'Authorization: Basic Q29yYToxMTE='&curl -v --raw --location --request POST 'http://localhost:8080/app/wallet/KIRA' \
+--header 'Authorization: Basic TDpLaXJh'&curl -v --raw --location --request OPTIONS 'http://localhost:8080/app/wallet/KIRA/stop' \
+--header 'Authorization: Basic TDpLaXJh'&curl -v --raw --location --request GET 'http://localhost:8080/app/wallet/KIRA' \
+--header 'Authorization: Basic Q29yYToxMTE='&curl -v --raw --location --request OPTIONS 'http://localhost:8080/app/wallet/KIRA/start' \
+--header 'Authorization: Basic TDpLaXJh'&curl -v --raw --location --request OPTIONS 'http://localhost:8080/app/wallet/KIRA/stop' \
+--header 'Authorization: Basic TDpLaXJh'&curl -v --raw --location --request OPTIONS 'http://localhost:8080/app/wallet/zzz/stop' \
+--header 'Authorization: Basic Q29yYToxMTE='&curl -v --raw --location --request OPTIONS 'http://localhost:8080/app/wallet/jjj/start' \
+--header 'Authorization: Basic Q29yYToxMTE='&curl -v --raw --location --request OPTIONS 'http://localhost:8080/app/wallet/KIRA/stop' \
+--header 'Authorization: Basic Q29yYToxMTE='&curl -v --raw --location --request OPTIONS 'http://localhost:8080/app/wallet/KIRA/start' \
+--header 'Authorization: Basic Q29yYToxMTE='&curl -v --raw --location --request OPTIONS 'http://localhost:8080/app/wallet/KIRA/stop' \
+--header 'Authorization: Basic Q29yYToxMTE='&curl -v --raw --location --request OPTIONS 'http://localhost:8080/app/wallet/jjj/stop' \
+--header 'Authorization: Basic Q29yYToxMTE='&curl -v --raw --location --request OPTIONS 'http://localhost:8080/app/wallet/nameA/stop' \
+--header 'Authorization: Basic UmFteml5YToxMjM0'
+
+Synchronous commands.
+curl -v --raw --location --request POST 'http://localhost:8080/app/wallet/nameA' \
+--header 'Authorization: Basic UmFteml5YToxMjM0'
+curl -v --raw --location --request POST 'http://localhost:8080/app/wallet/name' \
+--header 'Authorization: Basic UmFteml5YToxMjM0'
+curl -v --raw --location --request OPTIONS 'http://localhost:8080/app/wallet/start' \
+--header 'Authorization: Basic UmFteml5YToxMjM0'
+curl -v --raw --location --request OPTIONS 'http://localhost:8080/app/wallet/name/start' \
+--header 'Authorization: Basic UmFteml5YToxMjM0'
+curl -v --raw --location --request OPTIONS 'http://localhost:8080/app/wallet/nameA/start' \
+--header 'Authorization: Basic UmFteml5YToxMjM0'
+curl -v --raw --location --request POST 'http://localhost:8080/app/wallet/nameB' \
+--header 'Authorization: Basic UmFteml5YToxMjM0'
+curl -v --raw --location --request OPTIONS 'http://localhost:8080/app/wallet/name/stop' \
+--header 'Authorization: Basic UmFteml5YToxMjM0'
+curl -v --raw --location --request OPTIONS 'http://localhost:8080/app/wallet/name/stop' \
+--header 'Authorization: Basic UmFteml5YToxMjM0'
+curl -v --raw --location --request OPTIONS 'http://localhost:8080/app/wallet/name/stop' \
+--header 'Authorization: Basic UmFteml5YToxMjM0'
+curl -v --raw --location --request OPTIONS 'http://localhost:8080/app/wallet/nameB/stop' \
+--header 'Authorization: Basic UmFteml5YToxMjM0'
+curl -v --raw --location --request OPTIONS 'http://localhost:8080/app/wallet/nameB/start' \
+--header 'Authorization: Basic UmFteml5YToxMjM0'
+curl -v --raw --location --request OPTIONS 'http://localhost:8080/app/wallet/nameA/stop' \
+--header 'Authorization: Basic UmFteml5YToxMjM0'
+curl -v --raw --location --request POST 'http://localhost:8080/app/wallet/nameA' \
+--header 'Authorization: Basic UmFteml5YToxMjM0'
+curl -v --raw --location --request POST 'http://localhost:8080/app/wallet/name' \
+--header 'Authorization: Basic UmFteml5YToxMjM0'
+curl -v --raw --location --request OPTIONS 'http://localhost:8080/app/wallet/start' \
+--header 'Authorization: Basic UmFteml5YToxMjM0'
+curl -v --raw --location --request OPTIONS 'http://localhost:8080/app/wallet/name/start' \
+--header 'Authorization: Basic UmFteml5YToxMjM0'
+curl -v --raw --location --request OPTIONS 'http://localhost:8080/app/wallet/nameA/start' \
+--header 'Authorization: Basic UmFteml5YToxMjM0'
+curl -v --raw --location --request POST 'http://localhost:8080/app/wallet/nameB' \
+--header 'Authorization: Basic UmFteml5YToxMjM0'
+curl -v --raw --location --request OPTIONS 'http://localhost:8080/app/wallet/name/stop' \
+--header 'Authorization: Basic UmFteml5YToxMjM0'
+curl -v --raw --location --request OPTIONS 'http://localhost:8080/app/wallet/name/stop' \
+--header 'Authorization: Basic UmFteml5YToxMjM0'
+curl -v --raw --location --request OPTIONS 'http://localhost:8080/app/wallet/name/stop' \
+--header 'Authorization: Basic UmFteml5YToxMjM0'
+curl -v --raw --location --request OPTIONS 'http://localhost:8080/app/wallet/nameB/stop' \
+--header 'Authorization: Basic UmFteml5YToxMjM0'
+curl -v --raw --location --request OPTIONS 'http://localhost:8080/app/wallet/nameB/start' \
+--header 'Authorization: Basic UmFteml5YToxMjM0'
+curl -v --raw --location --request OPTIONS 'http://localhost:8080/app/wallet/nameA/stop' \
+--header 'Authorization: Basic UmFteml5YToxMjM0'
+curl -v --raw --location --request POST 'http://localhost:8080/app/user/' \
+--header 'Authorization: Basic UmFteml5YToxMjM0'
+curl -v --raw --location --request POST 'http://localhost:8080/app/user/1' \
+--header 'Authorization: Basic UmFteml5YToxMjM0'
+curl -v --raw --location --request POST 'http://localhost:8080/app/user/10?username=Mary&pass=sth' \
+--header 'Authorization: Basic UmFteml5YToxMjM0'
+curl -v --raw --location --request POST 'http://localhost:8080/app/user/10?username=Mary&password=@@@' \
+--header 'Authorization: Basic UmFteml5YToxMjM0'
+curl -v --raw --location --request GET 'http://localhost:8080/app/user/1' \
+--header 'Authorization: Basic UmFteml5YToxMjM0'
+curl -v --raw --location --request GET 'http://localhost:8080/app/user/1' \
+--header 'Authorization: Basic TWFyeTpAQEA='
+curl -v --raw --location --request GET 'http://localhost:8080/app/user/2' \
+--header 'Authorization: Basic TWFyeTpAQEA='
+curl -v --raw --location --request GET 'http://localhost:8080/app/user/0' \
+--header 'Authorization: Basic TWFyeTpAQEA='
+curl -v --raw --location --request POST 'http://localhost:8080/app/user/1?username=2727&password=22' \
+--header 'Authorization: Basic TWFyeTpAQEA='
+curl -v --raw --location --request POST 'http://localhost:8080/app/wallet/82' \
+--header 'Authorization: Basic TWFyeTpAQEA='
+curl -v --raw --location --request POST 'http://localhost:8080/app/wallet/aaa' \
+--header 'Authorization: Basic TWFyeTpAQEA='
+curl -v --raw --location --request OPTIONS 'http://localhost:8080/app/wallet/aaa/stop' \
+--header 'Authorization: Basic TWFyeTpAQEA='
+curl -v --raw --location --request OPTIONS 'http://localhost:8080/app/wallet/aaa/start' \
+--header 'Authorization: Basic TWFyeTpAQEA='
+curl -v --raw --location --request POST 'http://localhost:8080/app/wallet/bbb' \
+--header 'Authorization: Basic TWFyeTpAQEA='
+curl -v --raw --location --request OPTIONS 'http://localhost:8080/app/wallet/bbb/start' \
+--header 'Authorization: Basic TWFyeTpAQEA='
+curl -v --raw --location --request OPTIONS 'http://localhost:8080/app/wallet/nameB/start' \
+--header 'Authorization: Basic UmFteml5YToxMjM0'
+curl -v --raw --location --request OPTIONS 'http://localhost:8080/app/wallet/nameA/start' \
+--header 'Authorization: Basic UmFteml5YToxMjM0'
+curl -v --raw --location --request OPTIONS 'http://localhost:8080/app/wallet/name/start' \
+--header 'Authorization: Basic UmFteml5YToxMjM0'
+curl -v --raw --location --request OPTIONS 'http://localhost:8080/app/wallet/nameB/stop' \
+--header 'Authorization: Basic UmFteml5YToxMjM0'
+curl -v --raw --location --request OPTIONS 'http://localhost:8080/app/wallet/bbb/stop' \
+--header 'Authorization: Basic TWFyeTpAQEA='
+curl -v --raw --location --request OPTIONS 'http://localhost:8080/app/wallet/nameA/stop' \
+--header 'Authorization: Basic UmFteml5YToxMjM0'
+curl -v --raw --location --request OPTIONS 'http://localhost:8080/app/wallet/aaa/stop' \
+--header 'Authorization: Basic TWFyeTpAQEA='
+curl -v --raw --location --request OPTIONS 'http://localhost:8080/app/wallet/name/stop' \
+--header 'Authorization: Basic UmFteml5YToxMjM0'
